@@ -1,20 +1,43 @@
 //PAREI NO 23:45 AULA 2
 
-import React, { useState}  from 'react'
-import {View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, FlatList} from 'react-native'
+import React, { useState, useCallback}  from 'react'
+import {View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, FlatList ,Modal, TextInput} from 'react-native'
 import {Ionicons} from '@expo/vector-icons';
 import TaskList from './src/components/TaskList';
+import * as Animatable from 'react-native-animatable';
+
+const AnimateBtn = Animatable.createAnimatableComponent (TouchableOpacity) //criando animação no Touchbale opaticy
+
 export default function App(){
 
-  const [task, setTask] = useState ([
-    {key:1, task: 'Comprar pao'},
-    {key:1, task: 'Estudar React Native'},
-    {key:1, task: 'Ir na academia hoje a noite'},
-    {key:1, task: 'Comprar chocolate e coca cola'},
-    {key:5, task: 'Assistir o 1 video do sujeito'},
+  const [task, setTask] = useState ([]);
+
+  const [open, setOpen] = useState (false); 
+
+  const [input, setInput] = useState ();
 
 
-  ])
+
+    function handleAdd(){
+      if (input === '')
+      return;
+
+
+      const data = {
+        key: input,
+        task: input
+      };
+
+      setTask([...task, data])
+      setOpen (false);
+      setInput ('');
+    }
+
+    const handleDelete = useCallback ((data) => { 
+      const find = task.filter (r => r.key !== data.key);
+      setTask (find);
+
+    })
 
   return (
     <SafeAreaView style={styles.container}>
@@ -29,14 +52,60 @@ export default function App(){
         showsHorizontalScrollIndicator={false} //desabilita barra de rolagem qnd lista estiver cheia
         data={task}
         keyExtractor={ (item) => String (item.key)}
-        renderItem={({item}) => <TaskList data={item} /> }
+        renderItem={({item}) => <TaskList data={item} handleDelete={handleDelete} /> }
       
       />
 
-      <TouchableOpacity style={styles.fab}>
+
+      <Modal animationType="slide" transparent={false} visible={open}>
+
+      <SafeAreaView style={styles.modal}>
+        <View style={styles.modalHeader}>
+          <TouchableOpacity onPress={() => setOpen (false)}>
+            <Ionicons style={{marginLeft: 5, marginRight: 5}} name="md-arrow-back" size={40} color="#FFF"/>
+
+          </TouchableOpacity>
+          <Text style={styles.modalTitle}> Nova Tarefa</Text>
+        </View>
+
+        <Animatable.View style={styles.modalBoddy} animation="fadeInUp" useNativeDriver>
+          <TextInput
+            multiline={true} //faz a linha pular quando chega no fim da tela
+            placeholderTextColor="#747474"
+            autoCorrect={false} //tira o autocorretor
+            placeholder="O que precisa fazer hoje?"
+            style={styles.input}
+            value={input}
+            onChangeText={(texto) => setInput (texto)}
+          
+          
+          />
+
+          <TouchableOpacity style={styles.handleAdd} onPress={handleAdd}>
+            <Text style={styles.handleAddText}>Cadastrar</Text>
+
+          </TouchableOpacity>
+
+
+        </Animatable.View>
+
+      </SafeAreaView>
+
+
+      </Modal>
+
+      <AnimateBtn 
+      style={styles.fab}
+      useNativeDriver
+      animation="bounceInUp"
+      duration={1500}
+      onPress={ () => setOpen (true)}
+
+
+      >
         <Ionicons name="ios-add" size={35} color="#FFF" />
 
-      </TouchableOpacity>
+      </AnimateBtn>
 
     </SafeAreaView>
 
@@ -81,7 +150,67 @@ const styles = StyleSheet.create ({
       height: 3,
     }
 
+  },
+
+  modal:{
+    flex: 1,
+    backgroundColor: "#171d31",
+
+
+  },
+
+  modalHeader: {
+    marginLeft: 10,
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center'
+
+
+
+  },
+
+  modalTitle:{
+    marginLeft: 15,
+    fontSize: 23,
+    color: '#FFF'
+
+  },
+
+  modalBoddy:{
+    marginTop: 15,
+  },
+
+  input:{
+    fontSize: 15,
+    marginLeft: 10,
+    marginRight: 10,
+    marginTop: 30,
+    backgroundColor: '#FFF',
+    padding: 9,
+    height: 85,
+    textAlignVertical: 'top',
+    color: '#000',
+    borderRadius: 5,
+
+  },
+
+  handleAdd:{
+    backgroundColor: '#FFF',
+    marginTop: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 10,
+    marginRight: 10,
+    height: 40,
+    borderRadius: 5,
+
+
+  },
+
+  handleAddText:{
+    fontSize: 20,
   }
+
 
 
 
