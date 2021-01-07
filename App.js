@@ -1,7 +1,7 @@
 //PAREI NO 23:45 AULA 2
 
-import React, { useState, useCallback}  from 'react'
-import {View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, FlatList ,Modal, TextInput} from 'react-native'
+import React, { useState, useCallback, useEffect}  from 'react'
+import {View, Text, StyleSheet, SafeAreaView, StatusBar, TouchableOpacity, FlatList ,Modal, TextInput, AsyncStorage} from 'react-native'
 import {Ionicons} from '@expo/vector-icons';
 import TaskList from './src/components/TaskList';
 import * as Animatable from 'react-native-animatable';
@@ -16,7 +16,33 @@ export default function App(){
 
   const [input, setInput] = useState ();
 
+  
+//Buscando todas as tarefas ao iniciar o app
+    useEffect (()=>{
 
+      async function loadTasks (){
+        const taskStorage = await AsyncStorage.getItem ('@task')
+
+        if (taskStorage){
+          setTask (JSON.parse(taskStorage));
+        }
+
+      }
+
+      loadTasks ();
+
+    }, []);
+
+//salvando se houver tarefas alteradas
+    useEffect (() => {
+
+      async function saveTasks () {
+        await AsyncStorage.setItem ('@task', JSON.stringify(task))
+      }
+
+      saveTasks();
+
+    }, [task]);
 
     function handleAdd(){
       if (input === '')
